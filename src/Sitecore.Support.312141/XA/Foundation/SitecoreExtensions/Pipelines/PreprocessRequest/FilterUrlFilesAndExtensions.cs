@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Web;
 using System.Xml;
 using Sitecore.Configuration;
+using Sitecore.Diagnostics;
 using Sitecore.Pipelines.PreprocessRequest;
 
 namespace Sitecore.Support.XA.Foundation.SitecoreExtensions.Pipelines.PreprocessRequest
@@ -22,8 +24,19 @@ namespace Sitecore.Support.XA.Foundation.SitecoreExtensions.Pipelines.Preprocess
 
         public override void Process(PreprocessRequestArgs args)
         {
-            var filePath = Path.GetFileName(HttpContext.Current.Request.FilePath) ?? string.Empty;
-            if (AllowedFileNames.Any() && AllowedFileNames.Contains(filePath))
+            string filePath;
+
+            try
+            {
+                filePath = Path.GetFileName(HttpContext.Current.Request.FilePath);
+            }
+            catch (Exception e)
+            {
+                Log.Warn("Sitecore.Support.312141: handled invalid file path", e, this);
+                return;
+            }
+            
+            if (AllowedFileNames.Any() && AllowedFileNames.Contains(filePath ?? string.Empty))
             {
                 return;
             }
